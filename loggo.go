@@ -6,15 +6,17 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/gocolly/colly/debug"
+
 	"github.com/google/uuid"
 	slogmulti "github.com/samber/slog-multi"
 )
 
 type LoggerInterface interface {
-	Debug(msg string, args ...any)
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, err error, args ...any)
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
+	Error(msg string, err error, args ...interface{})
 	WithOperation(operationID string) LoggerInterface
 }
 
@@ -24,6 +26,23 @@ type Logger struct {
 }
 
 var _ LoggerInterface = &Logger{}
+
+// Ensure Logger implements debug.Debugger
+var _ debug.Debugger = &Logger{}
+
+// Event implements debug.Debugger's Event method
+func (l *Logger) Event(msg *debug.Event) {
+	switch msg.Type {
+	case "request":
+		l.Debug("Request: %s", msg.Values)
+	case "response":
+		l.Debug("Response: %s", msg.Values)
+	case "scraped":
+		l.Debug("Scraped: %s", msg.Values)
+	default:
+		l.Debug("Unknown event: %s", msg.Values)
+	}
+}
 
 func NewLogger(logFilePath string) (LoggerInterface, error) {
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -47,26 +66,40 @@ func NewLogger(logFilePath string) (LoggerInterface, error) {
 	return &Logger{logger: slogLogger}, nil
 }
 
-func (l *Logger) log(level slog.Level, msg string, args ...any) {
+type DebuggerWithInitError interface {
+	debug.Debugger
+	Init() error
+}
+
+var _ DebuggerWithInitError = &Logger{}
+
+// Init implements DebuggerWithInitError's Init method
+func (l *Logger) Init() error {
+	l.Debug("Debugger initialized")
+	// return an error if necessary, otherwise return nil
+	return nil
+}
+
+func (l *Logger) log(level slog.Level, msg string, args ...interface{}) {
 	if l.operationID != "" {
 		args = append(args, "operationID", l.operationID)
 	}
 	l.logger.Log(context.TODO(), level, msg, args...)
 }
 
-func (l *Logger) Debug(msg string, args ...any) {
+func (l *Logger) Debug(msg string, args ...interface{}) {
 	l.log(slog.LevelDebug, msg, args...)
 }
 
-func (l *Logger) Info(msg string, args ...any) {
+func (l *Logger) Info(msg string, args ...interface{}) {
 	l.log(slog.LevelInfo, msg, args...)
 }
 
-func (l *Logger) Warn(msg string, args ...any) {
+func (l *Logger) Warn(msg string, args ...interface{}) {
 	l.log(slog.LevelWarn, msg, args...)
 }
 
-func (l *Logger) Error(msg string, err error, args ...any) {
+func (l *Logger) Error(msg string, err error, args ...interface{}) {
 	args = append(args, "error", err)
 	l.log(slog.LevelError, msg, args...)
 }

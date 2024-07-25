@@ -8,6 +8,7 @@ require (
 )
 
 require (
-	github.com/samber/lo v1.44.0 // indirect
+	github.com/gocolly/colly v1.2.0
+	github.com/samber/lo v1.46.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 )
