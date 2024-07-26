@@ -17,6 +17,7 @@ type LoggerInterface interface {
 	Info(msg string, args ...interface{})
 	Warn(msg string, args ...interface{})
 	Error(msg string, err error, args ...interface{})
+	Fatal(msg string, err error, args ...interface{})
 	WithOperation(operationID string) LoggerInterface
 }
 
@@ -102,6 +103,12 @@ func (l *Logger) Warn(msg string, args ...interface{}) {
 func (l *Logger) Error(msg string, err error, args ...interface{}) {
 	args = append(args, "error", err)
 	l.log(slog.LevelError, msg, args...)
+}
+
+func (l *Logger) Fatal(msg string, err error, args ...interface{}) { // Implement Fatal method
+	args = append(args, "error", err)
+	l.logger.Log(context.TODO(), slog.LevelError, msg, args...)
+	os.Exit(1)
 }
 
 func (l *Logger) WithOperation(operationID string) LoggerInterface {
