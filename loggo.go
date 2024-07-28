@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/gocolly/colly/debug"
-
 	"github.com/google/uuid"
 	slogmulti "github.com/samber/slog-multi"
 )
@@ -19,11 +18,13 @@ type LoggerInterface interface {
 	Error(msg string, err error, args ...interface{})
 	Fatal(msg string, err error, args ...interface{})
 	WithOperation(operationID string) LoggerInterface
+	IsDebugEnabled() bool
 }
 
 type Logger struct {
 	logger      *slog.Logger
 	operationID string
+	level       slog.Level
 }
 
 var _ LoggerInterface = &Logger{}
@@ -45,7 +46,7 @@ func (l *Logger) Event(msg *debug.Event) {
 	}
 }
 
-func NewLogger(logFilePath string) (LoggerInterface, error) {
+func NewLogger(logFilePath string, level slog.Level) (LoggerInterface, error) {
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Printf("Error opening log file: %v", err)
@@ -53,7 +54,7 @@ func NewLogger(logFilePath string) (LoggerInterface, error) {
 	}
 
 	fileHandler := slog.NewJSONHandler(file, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: level,
 	})
 
 	stdoutHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -64,7 +65,7 @@ func NewLogger(logFilePath string) (LoggerInterface, error) {
 
 	slogLogger := slog.New(multiHandler)
 
-	return &Logger{logger: slogLogger}, nil
+	return &Logger{logger: slogLogger, level: level}, nil
 }
 
 type DebuggerWithInitError interface {
@@ -115,7 +116,12 @@ func (l *Logger) WithOperation(operationID string) LoggerInterface {
 	return &Logger{
 		logger:      l.logger,
 		operationID: operationID,
+		level:       l.level,
 	}
+}
+
+func (l *Logger) IsDebugEnabled() bool {
+	return l.level <= slog.LevelDebug
 }
 
 // Helper function to generate a new operation ID
