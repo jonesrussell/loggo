@@ -6,8 +6,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/gocolly/colly/debug"
-	"github.com/google/uuid"
 	slogmulti "github.com/samber/slog-multi"
 )
 
@@ -29,23 +27,6 @@ type Logger struct {
 
 var _ LoggerInterface = &Logger{}
 
-// Ensure Logger implements debug.Debugger
-var _ debug.Debugger = &Logger{}
-
-// Event implements debug.Debugger's Event method
-func (l *Logger) Event(msg *debug.Event) {
-	switch msg.Type {
-	case "request":
-		l.Debug("Request: %s", msg.Values)
-	case "response":
-		l.Debug("Response: %s", msg.Values)
-	case "scraped":
-		l.Debug("Scraped: %s", msg.Values)
-	default:
-		l.Debug("Unknown event: %s", msg.Values)
-	}
-}
-
 func NewLogger(logFilePath string, level slog.Level) (LoggerInterface, error) {
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
@@ -66,20 +47,6 @@ func NewLogger(logFilePath string, level slog.Level) (LoggerInterface, error) {
 	slogLogger := slog.New(multiHandler)
 
 	return &Logger{logger: slogLogger, level: level}, nil
-}
-
-type DebuggerWithInitError interface {
-	debug.Debugger
-	Init() error
-}
-
-var _ DebuggerWithInitError = &Logger{}
-
-// Init implements DebuggerWithInitError's Init method
-func (l *Logger) Init() error {
-	l.Debug("Debugger initialized")
-	// return an error if necessary, otherwise return nil
-	return nil
 }
 
 func (l *Logger) log(level slog.Level, msg string, args ...interface{}) {
@@ -122,9 +89,4 @@ func (l *Logger) WithOperation(operationID string) LoggerInterface {
 
 func (l *Logger) IsDebugEnabled() bool {
 	return l.level <= slog.LevelDebug
-}
-
-// Helper function to generate a new operation ID
-func NewOperationID() string {
-	return uuid.New().String()
 }
