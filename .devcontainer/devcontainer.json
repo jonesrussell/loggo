@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
-	"name": "Go",
+	"name": "Go Loggo",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
 	"customizations": {
@@ -14,7 +14,8 @@
 				"nhoizey.gremlins",
 				"ms-azuretools.vscode-docker",
 				"redhat.vscode-yaml",
-				"task.vscode-task"
+				"task.vscode-task",
+				"golang.go"
 			]
 		}
 	},

@@ -73,7 +73,7 @@ func (l *Logger) Error(msg string, err error, args ...interface{}) {
 	l.log(slog.LevelError, msg, args...)
 }
 
-func (l *Logger) Fatal(msg string, err error, args ...interface{}) { // Implement Fatal method
+func (l *Logger) Fatal(msg string, err error, args ...interface{}) {
 	args = append(args, "error", err)
 	l.logger.Log(context.TODO(), slog.LevelError, msg, args...)
 	os.Exit(1)
