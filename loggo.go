@@ -87,7 +87,7 @@ func (l *Logger) Error(msg string, err error, args ...interface{}) {
 func (l *Logger) Fatal(msg string, err error, args ...interface{}) {
 	args = append(args, "error", err)
 	l.logger.Log(context.TODO(), slog.LevelError, msg, args...)
-	os.Exit(1)
+	osExit(1)
 }
 
 func (l *Logger) WithOperation(operationID string) LoggerInterface {
@@ -101,3 +101,5 @@ func (l *Logger) WithOperation(operationID string) LoggerInterface {
 func (l *Logger) IsDebugEnabled() bool {
 	return l.level <= LevelDebug
 }
+
+var osExit = os.Exit
