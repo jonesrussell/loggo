@@ -1,42 +1,42 @@
 package loggo
 
-type MockLogger struct {
-	// You can add more fields if needed
-	InfoMessages  []string
-	DebugMessages []string
-	ErrorMessages []string
-}
+import (
+	"github.com/stretchr/testify/mock"
+)
 
-func NewMockLogger() *MockLogger {
-	return &MockLogger{}
+type MockLogger struct {
+	mock.Mock
 }
 
 func (m *MockLogger) Debug(msg string, args ...interface{}) {
-	m.DebugMessages = append(m.DebugMessages, msg)
+	m.Called(msg, args)
 }
 
 func (m *MockLogger) Info(msg string, args ...interface{}) {
-	m.InfoMessages = append(m.InfoMessages, msg)
+	m.Called(msg, args)
 }
 
 func (m *MockLogger) Warn(msg string, args ...interface{}) {
-	// Implement this if you use it in your tests
+	m.Called(msg, args)
 }
 
 func (m *MockLogger) Error(msg string, err error, args ...interface{}) {
-	m.ErrorMessages = append(m.ErrorMessages, msg)
+	m.Called(msg, err, args)
 }
 
 func (m *MockLogger) Fatal(msg string, err error, args ...interface{}) {
-	// Implement this if you use it in your tests
+	m.Called(msg, err, args)
 }
 
 func (m *MockLogger) WithOperation(operationID string) LoggerInterface {
-	// Implement this if you use it in your tests
-	return m
+	args := m.Called(operationID)
+	return args.Get(0).(LoggerInterface)
 }
 
 func (m *MockLogger) IsDebugEnabled() bool {
-	// Implement this if you use it in your tests
-	return false
+	args := m.Called()
+	return args.Bool(0)
 }
+
+// Ensure MockLogger implements LoggerInterface
+var _ LoggerInterface = &MockLogger{}
