@@ -3,6 +3,7 @@ module github.com/jonesrussell/loggo
 go 1.22
 
 require (
+	github.com/golang/mock v1.6.0
 	github.com/samber/slog-multi v1.2.1
 	github.com/stretchr/testify v1.9.0
 )
